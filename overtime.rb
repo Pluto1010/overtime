@@ -4,19 +4,17 @@ timelog_file = ARGV[0]
 require 'json'
 require 'open-uri'
 require 'csv'
-require 'ap'
 
 class Stunden
   def initialize()
-    feiertage = JSON.load(open("http://feiertage.jarmedia.de/api/?jahr=2016"))
-    @nrw_feiertage = feiertage["NW"]
-    ap @nrw_feiertage
+    @bank_holidays = JSON.load(open("http://feiertage.jarmedia.de/api/?jahr=2016"))
+    @use_bundesland = "NW"
   end
 
   def bank_holiday?(date)
     date_string = date.strftime("%Y-%m-%d")
 
-    @nrw_feiertage.each do |h,v|
+    @bank_holidays[@use_bundesland].each do |h,v|
       return true if v["datum"] == date_string
     end
 
