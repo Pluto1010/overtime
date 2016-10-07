@@ -5,7 +5,7 @@ require 'json'
 require 'open-uri'
 require 'csv'
 
-class Stunden
+class Overtime
   def initialize()
     @bank_holidays = JSON.load(open("http://feiertage.jarmedia.de/api/?jahr=2016"))
     @use_bundesland = "NW"
@@ -49,5 +49,5 @@ class Stunden
   end
 end
 
-instance = Stunden.new
+instance = Overtime.new
 instance.calculate(timelog_file)
