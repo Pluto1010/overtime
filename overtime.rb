@@ -70,7 +70,7 @@ class Overtime
 
     tp result
 
-    puts "Overtime: #{overall_overtime}"
+    puts "Overtime: #{overall_overtime} h"
   end
 end
 
