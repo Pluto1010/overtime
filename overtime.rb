@@ -4,10 +4,12 @@ timelog_file = ARGV[0]
 require 'json'
 require 'open-uri'
 require 'csv'
+require 'table_print'
 
 class Overtime
   def initialize()
     @bank_holidays = JSON.load(open("http://feiertage.jarmedia.de/api/?jahr=2016"))
+    @bank_holidays.merge! JSON.load(open("http://feiertage.jarmedia.de/api/?jahr=2017"))
     @use_bundesland = "NW"
   end
 
@@ -26,6 +28,7 @@ class Overtime
   end
 
   def calculate(timelog_file)
+    result = []
     overall_overtime = 0;
     CSV.foreach(timelog_file, encoding: 'ISO8859-15:utf-8', col_sep: ';', headers: true) do |row|
     #  ap row
@@ -38,12 +41,22 @@ class Overtime
       at_weekend = weekend?(date)
 
       overtime = hours
-      overtime = overtime - 8 unless at_weekend
+      overtime -= 8 unless at_weekend || bank_holiday
 
-      puts "#{date} #{hours} #{activity} #{bank_holiday} #{overtime} #{comment} #{"weekend" if at_weekend}"
+      result << {
+        date: date,
+        worktime: hours,
+        overtime_hours: overtime,
+        activity: activity,
+        comment: comment,
+        is_weekend: ("WEEKEND" if at_weekend),
+        is_bank_holiday: ("BANK_HOLIDAY" if bank_holiday)
+      }
 
       overall_overtime = overall_overtime + overtime
     end
+
+    tp result
 
     puts "Overtime: #{overall_overtime}"
   end
