@@ -8,16 +8,28 @@ require 'table_print'
 
 class Overtime
   def initialize()
-    @bank_holidays = JSON.load(open("http://feiertage.jarmedia.de/api/?jahr=2016"))
-    @bank_holidays.merge! JSON.load(open("http://feiertage.jarmedia.de/api/?jahr=2017"))
-    @use_bundesland = "NW"
+    @use_federal_state = "NW"
+    @bank_holidays = Hash.new { |h,k| h[k] = Hash.new { |h2,k2| h2[k2] = [] } }
+
+    add_holidays "http://feiertage.jarmedia.de/api/?jahr=2016"
+    add_holidays "http://feiertage.jarmedia.de/api/?jahr=2017"
+  end
+
+  def add_holidays(url)
+    holidays = JSON.load(open(url))
+
+    holidays.each do |k, d|
+      d.each do |bank_holiday_name, info|
+        @bank_holidays[k][bank_holiday_name] << info['datum']
+      end
+    end
   end
 
   def bank_holiday?(date)
     date_string = date.strftime("%Y-%m-%d")
 
-    @bank_holidays[@use_bundesland].each do |h,v|
-      return true if v["datum"] == date_string
+    @bank_holidays[@use_federal_state].each do |h,v|
+      return true if v.include?(date_string)
     end
 
     return false
