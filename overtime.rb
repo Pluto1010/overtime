@@ -13,6 +13,8 @@ class Overtime
 
     add_holidays "http://feiertage.jarmedia.de/api/?jahr=2016"
     add_holidays "http://feiertage.jarmedia.de/api/?jahr=2017"
+
+    @substracted_per_day = Hash.new { |h,k| h[k] = 0 }
   end
 
   def add_holidays(url)
@@ -53,7 +55,11 @@ class Overtime
       at_weekend = weekend?(date)
 
       overtime = hours
-      overtime -= 8 unless at_weekend || bank_holiday
+
+      unless @substracted_per_day.key?(date)
+        overtime -= 8 unless at_weekend || bank_holiday
+        @substracted_per_day[row["Datum"]] += 1
+      end
 
       result << {
         date: date,
