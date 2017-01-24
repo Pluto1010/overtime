@@ -56,15 +56,20 @@ class Overtime
 
       overtime = hours
 
+      substracted = 0
       unless @substracted_per_day.key?(date)
-        overtime -= 8 unless at_weekend || bank_holiday
-        @substracted_per_day[row["Datum"]] += 1
+        unless at_weekend || bank_holiday
+          substract = -8
+          overtime += substract
+          @substracted_per_day[date] += 1
+        end
       end
 
       result << {
         date: date,
         worktime: hours,
         overtime_hours: overtime,
+        substract: substract,
         activity: activity,
         comment: comment,
         is_weekend: ("WEEKEND" if at_weekend),
@@ -74,6 +79,7 @@ class Overtime
       overall_overtime = overall_overtime + overtime
     end
 
+    tp.set :separator, ";"
     tp result
 
     puts "Overtime: #{overall_overtime} h"
