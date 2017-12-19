@@ -7,14 +7,22 @@ require 'csv'
 require 'table_print'
 
 class Overtime
+  attr_reader :current_year
+
   def initialize()
     @use_federal_state = "NW"
     @bank_holidays = Hash.new { |h,k| h[k] = Hash.new { |h2,k2| h2[k2] = [] } }
-
-    add_holidays "http://feiertage.jarmedia.de/api/?jahr=2016"
-    add_holidays "http://feiertage.jarmedia.de/api/?jahr=2017"
-
     @substracted_per_day = Hash.new { |h,k| h[k] = 0 }
+
+    (first_year..current_year+1).each { |year| add_holidays("http://feiertage.jarmedia.de/api/?jahr=#{year}") }
+  end
+
+  def current_year
+    @current_year ||= Date.today.year
+  end
+
+  def first_year
+    2016
   end
 
   def add_holidays(url)
@@ -51,6 +59,8 @@ class Overtime
       activity = row["Aktivität"]
       comment = row["Kommentar"]
 
+      hours = 0 if activity == 'Holiday'
+
       bank_holiday = bank_holiday?(date)
       at_weekend = weekend?(date)
 
@@ -58,7 +68,7 @@ class Overtime
 
       substracted = 0
       unless @substracted_per_day.key?(date)
-        unless at_weekend || bank_holiday
+        unless at_weekend || bank_holiday ||  activity == 'Holiday'
           substract = -8
           overtime += substract
           @substracted_per_day[date] += 1
