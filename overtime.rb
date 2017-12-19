@@ -59,7 +59,7 @@ class Overtime
       activity = row["Aktivität"]
       comment = row["Kommentar"]
 
-      hours = 0 if activity == 'Holiday'
+      hours = 0 if activity == 'Holiday' || activity == 'Public Holiday'
 
       bank_holiday = bank_holiday?(date)
       at_weekend = weekend?(date)
@@ -68,7 +68,7 @@ class Overtime
 
       substracted = 0
       unless @substracted_per_day.key?(date)
-        unless at_weekend || bank_holiday ||  activity == 'Holiday'
+        unless at_weekend || bank_holiday ||  activity == 'Holiday' || activity == 'Public Holiday'
           substract = -8
           overtime += substract
           @substracted_per_day[date] += 1
